@@ -1,0 +1,112 @@
+1)
+level1.c:
+#include <string.h>
+#include <stdlib.h>
+int size = sizeof(double);
+void dcopy (int n , const double *X , double *Y ){
+    memmove(Y,X,(n* size));
+}
+void dswap (int n , double *X , double *Y ){
+    double *temp = malloc(n*size);
+    memmove(temp,X,n*size);
+    memmove(X,Y,n*size);
+    memmove(Y,temp,n*size);
+}
+void dscal (int n , double alpha , double *X ){
+    for (int i = 0; i < n; ++i) {
+        double tmp=X[i]*alpha;
+        X[i]=tmp;
+    }
+}
+void daxpy (int n , double alpha , const double *X , double *Y ){
+    double *tmp = malloc(n*size);
+    memmove(tmp,X,n*size);
+    dscal(n,alpha,tmp);
+    for (int i = 0; i < n; ++i) {
+        Y[i]=Y[i]+tmp[i];
+    }
+}
+double ddot (int n , const double *X , const double * Y ){
+    double res=0;
+    for (int i = 0; i < n; ++i) {
+        res+=(X[i]*Y[i]);
+    }
+    return res;
+}
+
+level2.c:
+#include <stdlib.h>
+void dgemv (
+        int m , int n,//n - ширина
+        double alpha , const double *A , const double *X ,
+        double beta , double * Y
+){
+    double *temp=malloc(m* sizeof(double ));
+    for (int i = 0; i < m; ++i) {
+        double val=0;
+        for (int j = 0; j < n; ++j) {
+            val+=A[i*n+j]*X[j]*alpha;
+        }
+        temp[i]=val;
+    }
+    for (int i = 0; i < m; ++i) {
+        double tmp=Y[i]*beta+temp[i];
+        Y[i]=tmp;
+    }
+}
+void dger (
+        int m , int n ,
+        double alpha , const double *X , const double *Y ,
+        double *A
+){
+    double *temp = malloc(m*n*sizeof(double ));
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            temp[i*n+j]=X[i]*Y[j]*alpha;
+        }
+    }
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            A[i*n+j]+=temp[i*n+j];
+        }
+    }
+}
+
+level3.c
+#include <stdlib.h>
+void dgemm (
+        int m , int n , int k ,
+        double alpha , const double *A , const double *B ,
+        double beta , double * C
+){
+    double *temp = calloc(n*m,sizeof(double));
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            for (int l = 0; l < k; ++l) {
+                temp[i*n+j]+= A[i*k + l] * B[l*n + j]*alpha;
+            }
+        }
+    }
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            C[i*n+j]*=beta;
+            C[i*n+j]+=temp[i*n+j];
+        }
+    }
+}
+
+
+c.bat:
+cl level1.c level2.c level3.c /c
+lib level1.obj level2.obj level3.obj /out:myblas.lib
+
+c.sh:
+gcc -c level1.c level2.c level3.c
+ar rcs myblas.a *.o
+
+2)
+c.bat:
+gcc -c -D USE_CRYPT -Izlib\ -Izlib\minizip zlib\minizip\ioapi.c zlib\minizip\unzip.c
+gcc -c -D USE_CRYPT -Izlib\minizip -Izlib\ zlib\*.c
+ar rcs libmy.a *.o
+gcc -D USE_CRYPT -Izlib\minizip -Izlib\ *.c libmy.a -o checked_solution.exe
