@@ -1,0 +1,1 @@
+cl integerset.c /MD /LD /D DO_EXPORTS
