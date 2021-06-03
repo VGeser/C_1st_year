@@ -1,0 +1,4 @@
+gcc -c -D USE_CRYPT -Izlib\ -Izlib\minizip zlib\minizip\ioapi.c zlib\minizip\unzip.c
+gcc -c -D USE_CRYPT -Izlib\minizip -Izlib\ zlib\*.c
+ar rcs libmy.a *.o
+gcc -D USE_CRYPT -Izlib\minizip -Izlib\ *.c libmy.a -o checked_solution.exe
